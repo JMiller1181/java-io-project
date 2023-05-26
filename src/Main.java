@@ -10,11 +10,8 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-//        Path textFile = Paths.get("src/mainDirectory/dir/textFile.txt");
-//        Path numsFile = Paths.get("src/mainDirectory/dir/numFile.txt");
-//        Path mainDir = Paths.get("src/mainDirectory/dir");
-//        Path target = Paths.get("src/mainDirectory/destination");
-        while (true) {
+        boolean run = true;
+        while (run) {
             System.out.println("""
                     Hello, welcome to file manager.
                     What would you like to do?
@@ -34,14 +31,14 @@ public class Main {
                     Path searchPath = Paths.get(searchPathString);
                     System.out.println("What would you like to search for?");
                     String searchQuery = scanner.nextLine();
-                    searchFiles(searchPath, searchQuery);
+                    Main.searchFiles(searchPath, searchQuery);
                     break;
                 case 2:
                     System.out.println("What directory or file do you want to display?\n" +
                             "Please type out entire file path. Example: src/mainDirectory/dir/numFile.txt");
                     String displayPathString = scanner.nextLine();
                     Path displayPath = Paths.get(displayPathString);
-                    getPathInfo(displayPath);
+                    System.out.println(Main.getPathInfo(displayPath));
                     break;
                 case 3:
                     System.out.println("""
@@ -55,14 +52,14 @@ public class Main {
                     scanner.nextLine();
                     switch (fileMenuOption) {
                         case 1:
-                            createFile();
+                            Main.createFile();
                             break;
                         case 2:
                             System.out.println("What file do you want to delete?\n" +
                                     "Please type out entire file path. Example: src/mainDirectory/dir/numFile.txt");
                             String deletePathString = scanner.nextLine();
                             Path deletePath = Paths.get(deletePathString);
-                            deleteAFile(deletePath);
+                            Main.deleteAFile(deletePath);
                             break;
                         case 3:
                             System.out.println("Which file would you like to copy?\n" +
@@ -73,7 +70,7 @@ public class Main {
                             String copyDestinationFileString = scanner.nextLine();
                             Path copyFileSourcePath = Paths.get(copyFileSourceString);
                             Path copyFileDestinationPath = Paths.get(copyDestinationFileString);
-                            copyFile(copyFileSourcePath, copyFileDestinationPath);
+                            Main.copyFile(copyFileSourcePath, copyFileDestinationPath);
                             break;
                         case 4:
                             System.out.println("Which file would you like to move?\n" +
@@ -84,9 +81,9 @@ public class Main {
                             String moveFileDestinationString = scanner.nextLine();
                             Path moveFileSourcePath = Paths.get(moveFileSourceString);
                             Path moveFileDesinationPath = Paths.get(moveFileDestinationString);
-                            moveFile(moveFileSourcePath, moveFileDesinationPath);
+                            Main.moveFile(moveFileSourcePath, moveFileDesinationPath);
                             break;
-                        default:
+                        default: run = false;
                             break;
                     }
                     break;
@@ -106,20 +103,20 @@ public class Main {
                             System.out.println("What would you like to name your directory?");
                             String createDirName = scanner.nextLine();
                             Path createBaseDirPath = Paths.get(createBaseDir);
-                            createDirectory(createBaseDirPath, createDirName);
+                            Main.createDirectory(createBaseDirPath, createDirName);
                             break;
                         case 2:
                             System.out.println("What directory do you want to delete?\n" +
                                     "Please type out entire file path. Example: src/mainDirectory/dir/numFile.txt");
-                            String deletePathString = scanner.nextLine();
-                            Path deletePath = Paths.get(deletePathString);
-                            deleteAFile(deletePath);
+                            String deleteDirPathString = scanner.nextLine();
+                            Path deleteDirPath = Paths.get(deleteDirPathString);
+                            Main.deleteAFile(deleteDirPath);
                             break;
-                        default:
+                        default: run = false;
                             break;
                     }
                     break;
-                default:
+                default: run = false;
                     break;
             }
         }
@@ -179,6 +176,7 @@ public class Main {
             Path subDir = baseDir.resolve(dirName);
             try {
                 Files.createDirectory(subDir);
+                System.out.println("Successfully created directory.");
             } catch (IOException e) {
                 System.out.println("Error creating directory.");
                 System.out.println(e);
@@ -201,24 +199,26 @@ public class Main {
             if (Files.isDirectory(targetToDelete)) {
                 File targetDirectory = new File(targetToDelete.toUri());
                 File[] directoryContent = targetDirectory.listFiles();
-                if (directoryContent != null) {
+                if (directoryContent != null && directoryContent.length > 0) {
                     System.out.println("The directory is not empty.\n" + getPathInfo(targetToDelete)
                             + "\nWould you like to move the files to a new directory?\nYES\nNO");
                     String option = scanner.nextLine();
                     if (option.equalsIgnoreCase("yes")) {
                         System.out.println("What destination would you like to move the files to?");
                         String destinationPath = scanner.nextLine();
-                        Path destination = Paths.get(targetDirectory.getParent());
+                        Path destination = Paths.get(destinationPath);
                         for (File file : directoryContent) {
                             moveFile(file.toPath(), destination);
                         }
                         Files.deleteIfExists(targetToDelete);
+                        System.out.println("Successfully deleted directory.");
                     } else {
                         System.out.println("The directory is not empty and could not be deleted.");
                     }
                 }
             } else {
                 Files.deleteIfExists(targetToDelete);
+                System.out.println("Successfully deleted file.");
             }
         } catch (IOException e) {
             System.out.println("Error deleting file.");
@@ -279,7 +279,7 @@ public class Main {
         Path newFile = Paths.get(destination, fileName);
         try {
             Files.createFile(newFile);
-
+            System.out.println("Successfully created file.");
         } catch (IOException e) {
             System.out.println("Error creating file.");
             System.out.println(e);
@@ -337,7 +337,7 @@ public class Main {
             for(File file: files){
                 if(!file.isDirectory()){
                     String fileName = file.getName();
-                    if(fileName.contains(searchString)){
+                    if(fileName.toLowerCase().contains(searchString.toLowerCase())){
                         System.out.println("Found file: " + fileName +
                                 "\nat " + file.getPath());
                     }
